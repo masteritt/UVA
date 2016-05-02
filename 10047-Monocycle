@@ -1,0 +1,92 @@
+#include <iostream>
+#include <queue>
+#define INF 0x7fffffff
+#define Max 26
+using namespace std;
+
+int movement[2][4] = { { -1, 0, 1, 0 }, { 0, 1, 0, -1 } };
+int N, M, dp[Max][Max][4][5];
+char inp[Max][Max];
+
+class Node {
+public:
+	int x, y, d, c;
+	Node(int _x, int _y, int _d, int _c)
+	{
+		x = _x; y = _y; d = _d; c = _c;
+	}
+};
+
+bool isSafe(int x, int y) {
+	return (x >= 0 && x < N && y >= 0 && y < M && inp[x][y] != '#');
+}
+
+int BFS(int x, int y) {
+	queue<Node> Q;
+	Q.push(Node(x, y, 0, 0));
+	dp[x][y][0][0] = 0;
+
+	while (!Q.empty()) {
+		Node u = Q.front(); Q.pop();
+
+		int val = dp[u.x][u.y][u.d][u.c];
+		if (inp[u.x][u.y] == 'T' && (u.c == 0))
+			return val;
+
+		x = u.x + movement[0][u.d];
+		y = u.y + movement[1][u.d];
+
+		int newColor = (u.c + 1) % 5;
+		if (isSafe(x, y) && dp[x][y][u.d][newColor] == INF) {
+			dp[x][y][u.d][newColor] = val + 1;
+			Q.push(Node(x, y, u.d, newColor));
+		}
+		int newdirR = (u.d + 1) % 4;
+		if (dp[u.x][u.y][newdirR][u.c] == INF) {
+			dp[u.x][u.y][newdirR][u.c] = val + 1;
+			Q.push(Node(u.x, u.y, newdirR, u.c));
+		}
+		int newdirL = (u.d + 3) % 4;
+		if (dp[u.x][u.y][newdirL][u.c] == INF) {
+			dp[u.x][u.y][newdirL][u.c] = val + 1;
+			Q.push(Node(u.x, u.y, newdirL, u.c));
+		}
+	}
+	return -1;
+}
+
+int main() {
+	//freopen("input.txt", "r", stdin);
+	int T;
+	cin >> T;
+	for (int tc = 1; tc <= T; tc++){
+		cin >> N>>M;
+		int x, y;
+		int Answer = 0;
+		for (int i = 0; i < N; i++)
+		{
+			for (int j = 0; j < M; j++)
+			{
+				cin >> inp[i][j];
+				if (inp[i][j] == 'S')
+				{
+					x = i;
+					y = j;
+				}
+				for (int d = 0; d < 4; d++)
+					for (int c = 0; c < 5; c++)
+						dp[i][j][d][c] = INF;
+			}
+		}
+		Answer = BFS(x, y);
+		cout << "Case #" << tc << endl;
+		if (Answer > 0)
+		{
+			cout << Answer << endl;
+		}
+		else{
+			cout << "destination not reachable" << endl;
+		}
+	}
+	return 0;
+}
